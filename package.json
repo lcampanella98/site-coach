@@ -1,0 +1,18 @@
+{
+  "name": "site-coach",
+  "version": "1.0.0",
+  "description": "A tool for viewing the performance of a website by charting its load times",
+  "author": {
+    "name": "Lorenzo Campanella",
+    "email": "lrc22@njit.edu"
+  },
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/lcampanella98/site-coach.git"
+  },
+  "dependencies": {
+    "connect": "latest",
+    "serve-static": "latest",
+    "mysql": "latest"
+  }
+}
