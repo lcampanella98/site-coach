@@ -71,7 +71,6 @@ function getChartData(data) {
             date: date,
             loadTime: data[i]["load_speed"] // gets the load time in ms from the "load_speed" column
         });
-
     }
 
     var averageSpeedData = []; // the average speeds for each given day
@@ -87,7 +86,30 @@ function getChartData(data) {
         averageSpeedData.push(speedDayAverage); // push the data
 
         if ($.inArray(d, labels) < 0) // adds the label to the labels array if it does not yet contain it
-            labels.push(dateLabel);
+            labels.push(d);
+    }
+
+    // now we interpolate the missing data
+    for (var i = 0; i < labels.length - 1; i++) {
+        var cLabel = labels[i];
+        var cLabelSplit = cLabel.split("/");
+        var cMonth = cLabelSplit[0];
+        var cDayOfMonth = parseInt(cLabel.split("/")[1]);
+        var cLoadTime = averageSpeedData[i]; // we assert that the labels.length === averageSpeedData.length
+
+        var nextLabel = labels[i + 1];
+        var nextDayOfMonth = parseInt(nextLabel.split("/")[1]);
+        var nextLoadTime = averageSpeedData[i + 1];
+
+        if (cDayOfMonth + 1 < nextDayOfMonth) {
+            var numDaysBetween = nextDayOfMonth - cDayOfMonth - 1;
+            for (var numDaysAfter = 1; numDaysAfter <= numDaysBetween; numDaysAfter++) {
+                labels.splice(i + numDaysAfter, 0, cMonth + "/" + (cDayOfMonth + numDaysAfter));
+                var interpolatedLoadTime = cLoadTime + numDaysAfter * Math.round((nextLoadTime - cLoadTime) / (numDaysBetween + 1));
+                averageSpeedData.splice(i + numDaysAfter, 0, interpolatedLoadTime);
+            }
+            i += numDaysBetween;
+        }
     }
 
     return {
