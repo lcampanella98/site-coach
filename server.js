@@ -17,12 +17,12 @@ var sqlCon = mysql.createConnection({
 
 app.use(serve_static(path.join(__dirname, "public")));
 app.use("/getLogs", function(req, res, next) {
-    var q = "SELECT load_speed, time FROM load_times";
+    var q = "SELECT AVG(load_speed) as avg_load, CAST(time as DATE) as date FROM load_times GROUP BY date ORDER BY date";
     sqlCon.query(q, function(fields, results, err) {
         res.writeHead(200, {"Content-Type": "application/json"});
         res.write(JSON.stringify(results));
         res.end();
-    })
+    });
 });
 
 var server = http.createServer(app);
