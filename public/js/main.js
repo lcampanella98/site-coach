@@ -4,10 +4,7 @@ $(document).ready(function () {
         type: "get",
         dataType: "json",
         success: function (data) {
-            console.time("chartData");
             var chartData = getChartData(data); // organizes the JSON data for insertion into the chart
-            console.timeEnd("chartData");
-
 
             var $chart = $("#canvas-chart"); // selects the canvas for the chart
 
@@ -58,12 +55,14 @@ function getChartData(data) {
         labels.push((date.getUTCMonth() + 1) + "/" + date.getUTCDate());
         avgLoadTimes.push(row["avg_load"]);
     }
+
+    // interpolate the data for the missing dates
     var cLabel = labels[0];
     var cLabelSplit = cLabel.split("/");
     var cMonth = cLabelSplit[0];
     var cDayOfMonth = parseInt(cLabelSplit[1]);
     var cLoadTime = avgLoadTimes[0];
-    for (var i = 0; i < data.length; i++) {
+    for (var i = 0; i < data.length - 1; i++) {
         var nextLabel = labels[i + 1];
         var nextDayOfMonth = parseInt(nextLabel.split("/")[1]);
         var nextLoadTime = avgLoadTimes[i + 1];
@@ -76,6 +75,11 @@ function getChartData(data) {
             }
             i += numDaysBetween;
         }
+        cLabel = nextLabel;
+        cLabelSplit = cLabel.split("/");
+        cMonth = cLabelSplit[0];
+        cDayOfMonth = nextDayOfMonth;
+        cLoadTime = nextLoadTime;
     }
 
     return {
