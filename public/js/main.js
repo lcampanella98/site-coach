@@ -53,7 +53,7 @@ function getChartData(data) {
         var row = data[i];
         var date = new Date(row["date"]);
         labels.push((date.getUTCMonth() + 1) + "/" + date.getUTCDate());
-        avgLoadTimes.push(row["avg_load"]);
+        avgLoadTimes.push(row["avg_load_time"]);
     }
 
     // interpolate the data for the missing dates
