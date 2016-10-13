@@ -10,7 +10,7 @@ var app = connect();
 
 var SERVER_PORT = 8888;
 
-var dbConfigPath = "../../dbsetup/dbcosnfig.json";
+var dbConfigPath = "../../dbsetup/dbconfig.json";
 var dbConfigObj;
 
 if (fs.existsSync(dbConfigPath)) {
@@ -39,8 +39,8 @@ app.use("/getLogs", function (req, res) {
         "ORDER BY date";
     sqlCon.query(q, function (err, rows) {
         if (err) {
-            res.writeHead(500);
-            res.write("A database error occurred:\n" + err.toString());
+            res.writeHead(500, {"Content-Type": "text/plain"});
+            res.write("Database Error: " + err.toString());
             res.end();
             return;
         }

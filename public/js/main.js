@@ -42,6 +42,9 @@ $(document).ready(function () {
                     }
                 }
             });
+        },
+        error: function(request, status, error) {
+            $("#chart-error-info").html(request.responseText);
         }
     })
 });
