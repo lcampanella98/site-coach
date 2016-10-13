@@ -31,12 +31,13 @@ var sqlCon = mysql.createConnection({
 });
 
 app.use(serve_static(path.join(__dirname, "public")));
-app.use("/getLogs", function(req, res) {
-    var q = "SELECT ROUND(AVG(load_time)) as avg_load_time, CAST(request_timestamp as DATE) as date " +
+app.use("/getLogs", function (req, res) {
+    var q =
+        "SELECT ROUND(AVG(load_time)) as avg_load_time, CAST(request_timestamp as DATE) as date " +
         "FROM load_times " +
         "GROUP BY date " +
         "ORDER BY date";
-    sqlCon.query(q, function(err, rows) {
+    sqlCon.query(q, function (err, rows) {
         if (err) {
             res.writeHead(500);
             res.write("A database error occurred:\n" + err.toString());
