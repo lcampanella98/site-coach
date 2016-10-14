@@ -31,7 +31,7 @@ var sqlCon = mysql.createConnection({
 });
 
 app.use(serve_static(path.join(__dirname, "public")));
-app.use("/getLogs", function (req, res) {
+app.use("/getAverageLoadTimes", function (req, res) {
     var q =
         "SELECT ROUND(AVG(load_time)) as avg_load_time, CAST(request_timestamp as DATE) as date " +
         "FROM load_times " +
@@ -48,6 +48,19 @@ app.use("/getLogs", function (req, res) {
         res.write(JSON.stringify(rows));
         res.end();
     });
+});
+app.use("/getAllLogs", function (req, res) {
+    var q = "SELECT * FROM load_times";
+    sqlCon.query(q, function (err, rows) {
+        if (err) {
+            res.statusCode = 500;
+            res.end();
+            return;
+        }
+        res.writeHead(200, {"Content-Type": "application/json"});
+        res.write(JSON.stringify(rows));
+        res.end();
+    })
 });
 
 var server = http.createServer(app);
