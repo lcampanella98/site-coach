@@ -1,20 +1,20 @@
-$(document).ready(function () {
-    $.ajax({
-        url: "/getAllLogs",
-        type: "get",
-        dataType: "json",
-        success: function (data) {
+$.ajax({
+    url: "/getAllLogs",
+    type: "get",
+    dataType: "json",
+    success: function (data) {
+        sortLogData(data);
 
-            sortLogData(data);
-
+        $(document).ready(function () {
             setupAverageLoadTimeChart(data);
             setupLoginDistributionChart(data);
-        },
-        error: function (request, status, error) {
+        });
+    },
+    error: function (request, status, error) {
+        $(document).ready(function () {
             $("#chart-error-info").html(request.responseText);
-        }
-    });
-
+        });
+    }
 });
 
 function sortLogData(data) {
