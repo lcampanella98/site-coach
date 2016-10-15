@@ -41,7 +41,7 @@ app.use("/getAverageLoadTimes", function (req, res) {
     sqlCon.query(q, function (err, rows) {
         if (err) {
             res.writeHead(500, {"Content-Type": "text/plain"});
-            res.write("Database Error: " + err.toString());
+            res.write(err.toString());
             res.end();
             return;
         }
@@ -54,9 +54,11 @@ app.use("/getAllLogs", function (req, res) {
     var q = "SELECT * FROM load_times";
     sqlCon.query(q, function (err, rows) {
         if (err) {
-            res.statusCode = 500;
+            res.writeHead(500, {"Content-Type": "text/plain"});
+            res.write(err.toString());
             res.end();
             return;
+
         }
         res.writeHead(200, {"Content-Type": "application/json"});
         res.write(JSON.stringify(rows));
