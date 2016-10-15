@@ -189,11 +189,8 @@ function setupLoginDistributionChart(data) {
     });
 }
 
-/**
- * @return {string}
- */
-function UTCToTwelveHourString(UTCHour) {
-    return ((UTCHour + 11) % 12 + 1) + " " + (Math.floor(UTCHour / 12) < 1 ? "AM" : "PM");
+function UTCToTwelveHourString(hourUTC) {
+    return (((hourUTC + 11) % 12 + 1) + " " + (Math.floor(hourUTC / 12) < 1 ? "AM" : "PM")).toString();
 }
 
 function getLoginDistributionChartData(data) {
