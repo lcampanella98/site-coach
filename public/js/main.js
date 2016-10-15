@@ -1,24 +1,33 @@
 $(document).ready(function () {
     $.ajax({
-        url: "/getAverageLoadTimes",
+        url: "/getAllLogs",
         type: "get",
         dataType: "json",
         success: function (data) {
+
+            for (var i = 0; i < data.length; i++) {
+                data[i].date = new Date(data[i]["request_timestamp"]);
+            }
+
+            var rowDateComparison = function (r1, r2) {
+                if (r1.date.getUTCDate() < r2.date.getUTCDate())
+                    return -1;
+                else if (r1.date.getUTCDate() > r2.date.getUTCDate())
+                    return 1;
+                else // the dates must be equal
+                    return 0;
+            };
+
+            data.sort(rowDateComparison); // sort the data by the date of the month
+
             setupAverageLoadTimeChart(data);
+            setupLoginDistributionChart(data);
         },
         error: function (request, status, error) {
             $("#chart-error-info").html(request.responseText);
         }
     });
 
-    $.ajax({
-        url: "/getAllLogs",
-        type: "get",
-        dataType: "json",
-        success: function (data) {
-            setupLoginDistributionChart(data);
-        }
-    });
 });
 
 function setupLoginDistributionChart(data) {
@@ -65,12 +74,31 @@ function setupLoginDistributionChart(data) {
 function getAverageLoadTimeChartData(data) {
     var labels = []; // store the labels for the graph
     var avgLoadTimes = []; // store the average load times for each label
+
+
+
+    // populate the labels and avgLoadTimes arrays
     for (var i = 0; i < data.length; i++) { // loop through the rows from the query
+        var dateLabel = data[i].date.getUTCMonth() + "/" + data[i].date.getUTCDate();
+        labels.push(dateLabel); // add a label in the format "month/day"
+        var loadTimeSum = data[i]["load_time"];
+        var j = i + 1;
+        while (j < data.length && data[i].date.getUTCDate() == data[j].date.getUTCDate()) {
+            loadTimeSum += data[j]["load_time"];
+            j++;
+        }
+        var numLoadTimes = j - i;
+        avgLoadTimes.push(Math.round(loadTimeSum / numLoadTimes)); // add the average load time for the day
+        i += numLoadTimes - 1;
+    }
+
+
+/*    for (var i = 0; i < data.length; i++) {
         var row = data[i];
         var date = new Date(row["date"]);
-        labels.push((date.getUTCMonth() + 1) + "/" + date.getUTCDate()); // add a label in the format "month/day"
+        labels.push((date.getUTCMonth() + 1) + "/" + date.getUTCDate());
         avgLoadTimes.push(row["avg_load_time"]); // add the average load time for the day
-    }
+    }*/
 
     /*
      Interpolation of the data for missing dates:
@@ -88,7 +116,7 @@ function getAverageLoadTimeChartData(data) {
     var cDayOfMonth = parseInt(cLabelSplit[1]);
     var cLoadTime = avgLoadTimes[0];
 
-    for (var i = 0; i < data.length - 1; i++) { // loop through all adjacent days
+    for (var i = 0; i < labels.length - 1; i++) { // loop through all adjacent days
         // set the values for the "next" day
         var nextLabel = labels[i + 1];
         var nextDayOfMonth = parseInt(nextLabel.split("/")[1]);
