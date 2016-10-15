@@ -193,8 +193,7 @@ function setupLoginDistributionChart(data) {
  * @return {string}
  */
 function UTCToTwelveHourString(UTCHour) {
-    return (UTCHour % 12 != 0 ? UTCHour % 12 : 12).toString()
-        + " " + (Math.floor(UTCHour / 12) < 1 ? "AM" : "PM").toString();
+    return ((UTCHour + 11) % 12 + 1) + " " + (Math.floor(UTCHour / 12) < 1 ? "AM" : "PM");
 }
 
 function getLoginDistributionChartData(data) {
