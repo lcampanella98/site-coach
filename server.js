@@ -10,12 +10,13 @@ var app = connect();
 
 var SERVER_PORT = 8888;
 
-var dbConfigPath = "../../dbsetup/dbconfig.json";
+var dbConfigPath = "../dbsetup/dbconfig.json";
 var dbConfigObj;
 
 if (fs.existsSync(dbConfigPath)) {
     dbConfigObj = JSON.parse(fs.readFileSync(dbConfigPath));
 } else {
+    console.log('file not found');
     dbConfigObj = {
         host: "localhost",
         user: "root",

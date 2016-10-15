@@ -14,14 +14,21 @@
     <link href="css/style.css" rel="stylesheet">
 </head>
 <body>
-<div class="container">
-    <h1>Welcome to Site Coach</h1>
-    <h3>Here you can see the performance statistics of your website in how long it takes to serve its users</h3>
 
+
+<div class="container">
+    <div class="jumbotron">
+        <h1 style="text-align: center">Site Coach</h1>
+    </div>
+
+
+    <h3>Average Daily Load Speed For July 2016</h3>
     <div id="div-chart" style="padding-bottom: 5%">
         <p class="text-danger" id="chart-error-info"></p>
         <canvas id="canvas-chart"></canvas>
     </div>
+
+    <h3>Average Daily Distribution of Logins For July 2016</h3>
 
     <div id="div-hourly-chart">
         <canvas id="canvas-hourly-chart"></canvas>
