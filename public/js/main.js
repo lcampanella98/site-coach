@@ -142,6 +142,7 @@ function getAverageLoadTimeChartData(data) {
         cLoadTime = nextLoadTime;
     }
 
+    // return the labels and the data
     return {
         labels: labels,
         avgLoadTimes: avgLoadTimes
@@ -209,15 +210,21 @@ function getLoginDistributionChartData(data) {
         let timestamp = new Date(row["request_timestamp"]);
         let hour = timestamp.getUTCHours();
         numLoginsByHour[hour]++;
+
+        /*
+        the average will be calculated by greatest date of the month (e.g. 30),
+        not by the number of days counted, since some days are missing.
+         */
         if (timestamp.getUTCDate() > numDaysToCompare)
             numDaysToCompare = timestamp.getUTCDate();
     }
 
     var avgLoginDistribution = [];
     for (let i = 0; i < numLoginsByHour.length; i++) {
-        avgLoginDistribution.push(Math.round(numLoginsByHour[i] / numDaysToCompare));
+        avgLoginDistribution.push(Math.round(numLoginsByHour[i] / numDaysToCompare)); // average and push the log-ins
     }
 
+    // return the labels and the data
     return {
         labels: labels,
         avgLoginDistribution: avgLoginDistribution
