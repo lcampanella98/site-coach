@@ -4,45 +4,7 @@ $(document).ready(function () {
         type: "get",
         dataType: "json",
         success: function (data) {
-            var chartData = getChartData(data); // organizes the JSON data for insertion into the chart
-
-            var $chart = $("#canvas-chart"); // selects the canvas for the chart
-
-            var coachChart = new Chart($chart, { // create our chart
-                type: "line", // line chart as specified
-                data: {
-                    labels: chartData.labels,
-                    datasets: [
-                        {
-                            label: "RDE Test Site",
-                            tension: 0,
-                            data: chartData.avgLoadTimes,
-                            borderColor: 'rgba(0, 0, 255, 1)', // set the color of the line to a solid blue
-                            borderWidth: 1
-                        }
-                    ]
-                },
-                options: {
-                    scales: {
-                        yAxes: [{
-                            scaleLabel: { // label the y-axis
-                                display: true,
-                                labelString: "Average Load Time (ms)"
-                            },
-                            ticks: {
-                                // if beginAtZero remains false (default), the y value of the origin will be the lowest average load time, which I don't want
-                                beginAtZero: true
-                            }
-                        }],
-                        xAxes: [{
-                            scaleLabel: { // label the x-axis
-                                display: true,
-                                labelString: "Date"
-                            }
-                        }]
-                    }
-                }
-            });
+            setupAverageLoadTimeChart(data);
         },
         error: function (request, status, error) {
             $("#chart-error-info").html(request.responseText);
@@ -54,80 +16,53 @@ $(document).ready(function () {
         type: "get",
         dataType: "json",
         success: function (data) {
-            var hourlyChartData = getHourlyChartData(data);
-
-            var $hourlyChart = $("#canvas-hourly-chart");
-
-            var hourlyChart = new Chart($hourlyChart, {
-                type: "line",
-                data: {
-                    labels: hourlyChartData.labels,
-                    datasets: [
-                        {
-                            label: "RDE Test Site",
-                            tension: 0.2,
-                            data: hourlyChartData.avgNumLogins,
-                            borderColor: 'rgba(0, 0, 255, 1)', // set the color of the line to a solid blue
-                            borderWidth: 1
-                        }
-                    ]
-                },
-                options: {
-                    scales: {
-                        yAxes: [{
-                            scaleLabel: { // label the y-axis
-                                display: true,
-                                labelString: "Average Number of Log-ins"
-                            },
-                            ticks: {
-                                beginAtZero: true // if this remains false (default), the y value of the origin will be the lowest average load time, which I don't want
-                            }
-                        }],
-                        xAxes: [{
-                            scaleLabel: { // label the x-axis
-                                display: true,
-                                labelString: "Hour"
-                            }
-                        }]
-                    }
-                }
-            });
+            setupLoginDistributionChart(data);
         }
-    })
+    });
 });
 
-function getHourlyChartData(data) {
-    var labels = [];
-    var numLoginsByHour = [];
-    var numDaysToCompare = 0;
+function setupLoginDistributionChart(data) {
+    var loginDistData = getLoginDistributionChartData(data);
 
-    for (var i = 0; i < 24; i++) {
-        var labelStr = (i % 12 != 0 ? i % 12 : 12).toString() + " " + (Math.floor(i / 12) < 1 ? "AM" : "PM");
-        labels.push(labelStr);
-        numLoginsByHour.push(0);
-    }
+    var $loginDistChartCanvas = $("#canvas-hourly-chart");
 
-    for (var i = 0; i < data.length; i++) {
-        var row = data[i];
-        var timestamp = new Date(row["request_timestamp"]);
-        var hour = timestamp.getUTCHours();
-        numLoginsByHour[hour]++;
-        if (timestamp.getUTCDate() > numDaysToCompare)
-            numDaysToCompare = timestamp.getUTCDate();
-    }
-
-    var avgNumLogins = [];
-    for (var i = 0; i < numLoginsByHour.length; i++) {
-        avgNumLogins.push(Math.round(numLoginsByHour[i] / numDaysToCompare));
-    }
-
-    return {
-        labels: labels,
-        avgNumLogins: avgNumLogins
-    }
+    var hourlyChart = new Chart($loginDistChartCanvas, {
+        type: "line",
+        data: {
+            labels: loginDistData.labels,
+            datasets: [
+                {
+                    label: "RDE Test Site",
+                    tension: 0.2,
+                    data: loginDistData.avgLoginDistribution,
+                    borderColor: 'rgba(0, 0, 255, 1)', // set the color of the line to a solid blue
+                    borderWidth: 1
+                }
+            ]
+        },
+        options: {
+            scales: {
+                yAxes: [{
+                    scaleLabel: { // label the y-axis
+                        display: true,
+                        labelString: "Average Number of Log-ins"
+                    },
+                    ticks: {
+                        beginAtZero: true // if this remains false (default), the y value of the origin will be the lowest average load time, which I don't want
+                    }
+                }],
+                xAxes: [{
+                    scaleLabel: { // label the x-axis
+                        display: true,
+                        labelString: "Hour"
+                    }
+                }]
+            }
+        }
+    });
 }
 
-function getChartData(data) {
+function getAverageLoadTimeChartData(data) {
     var labels = []; // store the labels for the graph
     var avgLoadTimes = []; // store the average load times for each label
     for (var i = 0; i < data.length; i++) { // loop through the rows from the query
@@ -138,13 +73,13 @@ function getChartData(data) {
     }
 
     /*
-    Interpolation of the data for missing dates:
-        We loop through the labels and avgLoadTimes and store the important current and next values.
-        Then we check if there are days between them.
-            If so, we interpolate the missing days by "drawing a line" between the two days we do have and
-            setting the average load time for each missing day to its corresponding point on that line
+     Interpolation of the data for missing dates:
+     We loop through the labels and avgLoadTimes and store the important current and next values.
+     Then we check if there are days between them.
+     If so, we interpolate the missing days by "drawing a line" between the two days we do have and
+     setting the average load time for each missing day to its corresponding point on that line
 
-            If not, we continue checking the next two days until we hit the last day in the data-set
+     If not, we continue checking the next two days until we hit the last day in the data-set
      */
     // initialize the "current" necessary values
     var cLabel = labels[0];
@@ -152,7 +87,8 @@ function getChartData(data) {
     var cMonth = cLabelSplit[0];
     var cDayOfMonth = parseInt(cLabelSplit[1]);
     var cLoadTime = avgLoadTimes[0];
-    for (var i = 0; i < data.length - 1; i++) {
+
+    for (var i = 0; i < data.length - 1; i++) { // loop through all adjacent days
         // set the values for the "next" day
         var nextLabel = labels[i + 1];
         var nextDayOfMonth = parseInt(nextLabel.split("/")[1]);
@@ -186,3 +122,77 @@ function getChartData(data) {
         avgLoadTimes: avgLoadTimes
     }
 }
+
+function setupAverageLoadTimeChart(data) {
+    var avgLoadTimeData = getAverageLoadTimeChartData(data); // organizes the JSON data for insertion into the chart
+
+    var $avgLoadTimeChartCanvas = $("#canvas-chart"); // selects the canvas for the chart
+
+    var avgLoadTimeChart = new Chart($avgLoadTimeChartCanvas, { // create our chart
+        type: "line", // line chart as specified
+        data: {
+            labels: avgLoadTimeData.labels,
+            datasets: [
+                {
+                    label: "RDE Test Site",
+                    tension: 0,
+                    data: avgLoadTimeData.avgLoadTimes,
+                    borderColor: 'rgba(0, 0, 255, 1)', // set the color of the line to a solid blue
+                    borderWidth: 1
+                }
+            ]
+        },
+        options: {
+            scales: {
+                yAxes: [{
+                    scaleLabel: { // label the y-axis
+                        display: true,
+                        labelString: "Average Load Time (ms)"
+                    },
+                    ticks: {
+                        // if beginAtZero remains false (default), the y value of the origin will be the lowest average load time, which I don't want
+                        beginAtZero: true
+                    }
+                }],
+                xAxes: [{
+                    scaleLabel: { // label the x-axis
+                        display: true,
+                        labelString: "Date"
+                    }
+                }]
+            }
+        }
+    });
+}
+
+function getLoginDistributionChartData(data) {
+    var labels = [];
+    var numLoginsByHour = [];
+    var numDaysToCompare = 0;
+
+    for (var i = 0; i < 24; i++) {
+        var labelStr = (i % 12 != 0 ? i % 12 : 12).toString() + " " + (Math.floor(i / 12) < 1 ? "AM" : "PM");
+        labels.push(labelStr);
+        numLoginsByHour.push(0);
+    }
+
+    for (var i = 0; i < data.length; i++) {
+        var row = data[i];
+        var timestamp = new Date(row["request_timestamp"]);
+        var hour = timestamp.getUTCHours();
+        numLoginsByHour[hour]++;
+        if (timestamp.getUTCDate() > numDaysToCompare)
+            numDaysToCompare = timestamp.getUTCDate();
+    }
+
+    var avgLoginDistribution = [];
+    for (var i = 0; i < numLoginsByHour.length; i++) {
+        avgLoginDistribution.push(Math.round(numLoginsByHour[i] / numDaysToCompare));
+    }
+
+    return {
+        labels: labels,
+        avgLoginDistribution: avgLoginDistribution
+    }
+}
+
