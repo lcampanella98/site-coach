@@ -1,20 +1,37 @@
 <html>
 <head>
     <title>Site Coach</title>
-    <script   src="http://code.jquery.com/jquery-3.1.1.min.js"   integrity="sha256-hVVnYaiADRTO2PzUGmuLJr8BLUSjGIZsDYGmIJLv2b8="   crossorigin="anonymous"></script>
-    <link href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/css/bootstrap.min.css" rel="stylesheet" integrity="sha384-BVYiiSIFeK1dGmJRAkycuHAHRg32OmUcww7on3RYdg4Va+PmSTsz/K68vbdEjh4u" crossorigin="anonymous">
-    <script src="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/js/bootstrap.min.js" integrity="sha384-Tc5IQib027qvyjSMfHjOMaLkfuWVxZxUPnCJA7l2mCWNIpG9mGCD8wGNIcPD7Txa" crossorigin="anonymous"></script>
-    <script type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/2.3.0/Chart.bundle.min.js"></script>
+    <script src="http://code.jquery.com/jquery-3.1.1.min.js"
+            integrity="sha256-hVVnYaiADRTO2PzUGmuLJr8BLUSjGIZsDYGmIJLv2b8=" crossorigin="anonymous"></script>
+    <link href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/css/bootstrap.min.css" rel="stylesheet"
+          integrity="sha384-BVYiiSIFeK1dGmJRAkycuHAHRg32OmUcww7on3RYdg4Va+PmSTsz/K68vbdEjh4u" crossorigin="anonymous">
+    <script src="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/js/bootstrap.min.js"
+            integrity="sha384-Tc5IQib027qvyjSMfHjOMaLkfuWVxZxUPnCJA7l2mCWNIpG9mGCD8wGNIcPD7Txa"
+            crossorigin="anonymous"></script>
+    <script type="text/javascript"
+            src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/2.3.0/Chart.bundle.min.js"></script>
     <script src="js/main.js"></script>
     <link href="css/style.css" rel="stylesheet">
 </head>
 <body>
-<div class="container">
-    <h1>Welcome to Site Coach</h1>
-    <h3>Here you can see the performance statistics of your website in how long it takes to serve its users</h3>
 
+
+<div class="container">
+    <div class="jumbotron">
+        <h1 style="text-align: center">Site Coach</h1>
+    </div>
+
+
+    <h3>Average Daily Load Speed For July 2016</h3>
     <div id="div-chart" style="padding-bottom: 5%">
+        <p class="text-danger" id="chart-error-info"></p>
         <canvas id="canvas-chart"></canvas>
+    </div>
+
+    <h3>Average Daily Distribution of Logins For July 2016</h3>
+
+    <div id="div-hourly-chart">
+        <canvas id="canvas-hourly-chart"></canvas>
     </div>
     <br>
 </div>

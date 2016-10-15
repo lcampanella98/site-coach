@@ -1,6 +1,6 @@
 $(document).ready(function () {
     $.ajax({
-        url: "/getLogs",
+        url: "/getAverageLoadTimes",
         type: "get",
         dataType: "json",
         success: function (data) {
@@ -16,7 +16,7 @@ $(document).ready(function () {
                         {
                             label: "RDE Test Site",
                             tension: 0,
-                            data: chartData.averageSpeedData,
+                            data: chartData.avgLoadTimes,
                             borderColor: 'rgba(0, 0, 255, 1)', // set the color of the line to a solid blue
                             borderWidth: 1
                         }
@@ -30,7 +30,8 @@ $(document).ready(function () {
                                 labelString: "Average Load Time (ms)"
                             },
                             ticks: {
-                                beginAtZero: true // if this remains false (default), the y value of the origin will be the lowest average load time, which I don't want
+                                // if beginAtZero remains false (default), the y value of the origin will be the lowest average load time, which I don't want
+                                beginAtZero: true
                             }
                         }],
                         xAxes: [{
@@ -42,78 +43,146 @@ $(document).ready(function () {
                     }
                 }
             });
+        },
+        error: function (request, status, error) {
+            $("#chart-error-info").html(request.responseText);
+        }
+    });
+
+    $.ajax({
+        url: "/getAllLogs",
+        type: "get",
+        dataType: "json",
+        success: function (data) {
+            var hourlyChartData = getHourlyChartData(data);
+
+            var $hourlyChart = $("#canvas-hourly-chart");
+
+            var hourlyChart = new Chart($hourlyChart, {
+                type: "line",
+                data: {
+                    labels: hourlyChartData.labels,
+                    datasets: [
+                        {
+                            label: "RDE Test Site",
+                            tension: 0.2,
+                            data: hourlyChartData.avgNumLogins,
+                            borderColor: 'rgba(0, 0, 255, 1)', // set the color of the line to a solid blue
+                            borderWidth: 1
+                        }
+                    ]
+                },
+                options: {
+                    scales: {
+                        yAxes: [{
+                            scaleLabel: { // label the y-axis
+                                display: true,
+                                labelString: "Average Number of Log-ins"
+                            },
+                            ticks: {
+                                beginAtZero: true // if this remains false (default), the y value of the origin will be the lowest average load time, which I don't want
+                            }
+                        }],
+                        xAxes: [{
+                            scaleLabel: { // label the x-axis
+                                display: true,
+                                labelString: "Hour"
+                            }
+                        }]
+                    }
+                }
+            });
         }
     })
 });
 
-function getChartData(data) {
-    var datesAndSpeeds = {};
-    /*
-    Description of the "datesAndSpeeds" object:
-    Keys:
-        Each key is a string containing the month and day in the form "m/d"
-    Values:
-        Each value will be an array of objects.
-        Each object in that array represents one login, containing two name-value pairs;
-            date: the date object,
-            loadTime: page load time in ms
-     */
+function getHourlyChartData(data) {
+    var labels = [];
+    var numLoginsByHour = [];
+    var numDaysToCompare = 0;
 
-    var labels = []; // define the labels array for the x-axis
-
-    for (var i = 0; i < data.length; i++) { // loops through the row results from database query
-        var date = new Date(data[i]['time']); // instantiates a date object from the timestamp
-        var dateLabel = (date.getUTCMonth() + 1) + "/" + date.getUTCDate(); // creates a label for the x-axis (example: 7/22 for July 22nd)
-
-        if (datesAndSpeeds[dateLabel] === undefined) // initializes the array
-            datesAndSpeeds[dateLabel] = [];
-        datesAndSpeeds[dateLabel].push({ // pushes the date and load speed to the array
-            date: date,
-            loadTime: data[i]["load_speed"] // gets the load time in ms from the "load_speed" column
-        });
+    for (var i = 0; i < 24; i++) {
+        var labelStr = (i % 12 != 0 ? i % 12 : 12).toString() + " " + (Math.floor(i / 12) < 1 ? "AM" : "PM");
+        labels.push(labelStr);
+        numLoginsByHour.push(0);
     }
 
-    var averageSpeedData = []; // the average speeds for each given day
-
-    for (var d in datesAndSpeeds) { // loops through the keys in "datesAndSpeeds"
-        var dateSpeedArray = datesAndSpeeds[d]; // gets the array for d (d is a string of the form "m/d")
-
-        var loadTimeSum = 0; // keeps track of the sum of the load times
-        for (var i = 0; i < dateSpeedArray.length; i++) // sums the load times in the given day
-            loadTimeSum += dateSpeedArray[i].loadTime;
-
-        var speedDayAverage = Math.round(loadTimeSum / dateSpeedArray.length); // take the average and round to nearest ms
-        averageSpeedData.push(speedDayAverage); // push the data
-
-        if ($.inArray(d, labels) < 0) // adds the label to the labels array if it does not yet contain it
-            labels.push(d);
+    for (var i = 0; i < data.length; i++) {
+        var row = data[i];
+        var timestamp = new Date(row["request_timestamp"]);
+        var hour = timestamp.getUTCHours();
+        numLoginsByHour[hour]++;
+        if (timestamp.getUTCDate() > numDaysToCompare)
+            numDaysToCompare = timestamp.getUTCDate();
     }
 
-    // now we interpolate the missing data
-    for (var i = 0; i < labels.length - 1; i++) {
-        var cLabel = labels[i];
-        var cLabelSplit = cLabel.split("/");
-        var cMonth = cLabelSplit[0];
-        var cDayOfMonth = parseInt(cLabel.split("/")[1]);
-        var cLoadTime = averageSpeedData[i]; // we assert that the labels.length === averageSpeedData.length
-
-        var nextLabel = labels[i + 1];
-        var nextDayOfMonth = parseInt(nextLabel.split("/")[1]);
-        var nextLoadTime = averageSpeedData[i + 1];
-
-        if (cDayOfMonth + 1 < nextDayOfMonth) {
-            var numDaysBetween = nextDayOfMonth - cDayOfMonth - 1;
-            for (var numDaysAfter = 1; numDaysAfter <= numDaysBetween; numDaysAfter++) {
-                labels.splice(i + numDaysAfter, 0, cMonth + "/" + (cDayOfMonth + numDaysAfter));
-                var interpolatedLoadTime = cLoadTime + numDaysAfter * Math.round((nextLoadTime - cLoadTime) / (numDaysBetween + 1));
-                averageSpeedData.splice(i + numDaysAfter, 0, interpolatedLoadTime);
-            }
-            i += numDaysBetween;
-        }
+    var avgNumLogins = [];
+    for (var i = 0; i < numLoginsByHour.length; i++) {
+        avgNumLogins.push(Math.round(numLoginsByHour[i] / numDaysToCompare));
     }
 
     return {
         labels: labels,
-        averageSpeedData: averageSpeedData
+        avgNumLogins: avgNumLogins
+    }
+}
+
+function getChartData(data) {
+    var labels = []; // store the labels for the graph
+    var avgLoadTimes = []; // store the average load times for each label
+    for (var i = 0; i < data.length; i++) { // loop through the rows from the query
+        var row = data[i];
+        var date = new Date(row["date"]);
+        labels.push((date.getUTCMonth() + 1) + "/" + date.getUTCDate()); // add a label in the format "month/day"
+        avgLoadTimes.push(row["avg_load_time"]); // add the average load time for the day
+    }
+
+    /*
+    Interpolation of the data for missing dates:
+        We loop through the labels and avgLoadTimes and store the important current and next values.
+        Then we check if there are days between them.
+            If so, we interpolate the missing days by "drawing a line" between the two days we do have and
+            setting the average load time for each missing day to its corresponding point on that line
+
+            If not, we continue checking the next two days until we hit the last day in the data-set
+     */
+    // initialize the "current" necessary values
+    var cLabel = labels[0];
+    var cLabelSplit = cLabel.split("/");
+    var cMonth = cLabelSplit[0];
+    var cDayOfMonth = parseInt(cLabelSplit[1]);
+    var cLoadTime = avgLoadTimes[0];
+    for (var i = 0; i < data.length - 1; i++) {
+        // set the values for the "next" day
+        var nextLabel = labels[i + 1];
+        var nextDayOfMonth = parseInt(nextLabel.split("/")[1]);
+        var nextLoadTime = avgLoadTimes[i + 1];
+
+        // main algorithm for interpolation
+        if (cDayOfMonth + 1 < nextDayOfMonth) { // there are missing days between these two dates
+            var changeInLoadTime = nextLoadTime - cLoadTime;
+            var changeInDays = nextDayOfMonth - cDayOfMonth;
+            var slope = Math.round(changeInLoadTime / changeInDays); // the change in load time over the change in days
+            for (var numDaysAfter = 1; numDaysAfter < changeInDays; numDaysAfter++) { // loop through the missing days
+                // calculate the load time using the slope and y-intercept (the current load time)
+                var interpolatedLoadTime = cLoadTime + numDaysAfter * slope;
+
+                labels.splice(i + numDaysAfter, 0, cMonth + "/" + (cDayOfMonth + numDaysAfter)); // splice in the missing label
+                avgLoadTimes.splice(i + numDaysAfter, 0, interpolatedLoadTime); // splice in the interpolated load time
+            }
+            i += changeInDays - 1; // the for loop will take care of the -1
+        }
+
+        // set the current values equal to the next values
+        cLabel = nextLabel;
+        cLabelSplit = nextLabel.split("/");
+        cMonth = cLabelSplit[0];
+        cDayOfMonth = nextDayOfMonth;
+        cLoadTime = nextLoadTime;
+    }
+
+    return {
+        labels: labels,
+        avgLoadTimes: avgLoadTimes
     }
 }
