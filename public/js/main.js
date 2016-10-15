@@ -80,8 +80,6 @@ function getAverageLoadTimeChartData(data) {
     var labels = []; // store the labels for the graph
     var avgLoadTimes = []; // store the average load times for each label
 
-
-
     // populate the labels and avgLoadTimes arrays
     for (let i = 0; i < data.length; i++) { // loop through the rows from the query
         let dateLabel = data[i].date.getUTCMonth() + "/" + data[i].date.getUTCDate();

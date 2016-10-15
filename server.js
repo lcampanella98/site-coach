@@ -10,13 +10,13 @@ var app = connect();
 
 var SERVER_PORT = 8888;
 
-var dbConfigPath = "../dbsetup/dbconfig.json";
+var dbConfigPath = path.join(__dirname, "dbconfig.json");
 var dbConfigObj;
 
 if (fs.existsSync(dbConfigPath)) {
     dbConfigObj = JSON.parse(fs.readFileSync(dbConfigPath));
 } else {
-    console.log('file not found');
+    console.log("file not found");
     dbConfigObj = {
         host: "localhost",
         user: "root",
@@ -32,24 +32,6 @@ var sqlCon = mysql.createConnection({
 });
 
 app.use(serve_static(path.join(__dirname, "public")));
-app.use("/getAverageLoadTimes", function (req, res) {
-    var q =
-        "SELECT ROUND(AVG(load_time)) as avg_load_time, CAST(request_timestamp as DATE) as date " +
-        "FROM load_times " +
-        "GROUP BY date " +
-        "ORDER BY date";
-    sqlCon.query(q, function (err, rows) {
-        if (err) {
-            res.writeHead(500, {"Content-Type": "text/plain"});
-            res.write(err.toString());
-            res.end();
-            return;
-        }
-        res.writeHead(200, {"Content-Type": "application/json"});
-        res.write(JSON.stringify(rows));
-        res.end();
-    });
-});
 app.use("/getAllLogs", function (req, res) {
     var q = "SELECT * FROM load_times";
     sqlCon.query(q, function (err, rows) {
