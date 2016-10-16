@@ -1,28 +1,28 @@
-$.ajax({
+$.ajax({ // the main ajax call which requests the log data from the server
     url: "/getAllLogs",
     type: "get",
     dataType: "json",
     success: function (data) {
-        sortLogData(data);
+        sortLogData(data); // adds a date object to each row and sorts the data
 
         $(document).ready(function () {
-            setupAverageLoadTimeChart(data);
-            setupLoginDistributionChart(data);
+            setupAverageLoadTimeChart(data); // sets up the main load time chart
+            setupLoginDistributionChart(data); // sets up the login distribution charts
         });
     },
     error: function (request, status, error) {
         $(document).ready(function () {
-            $("#chart-error-info").html(request.responseText);
+            $("#chart-error-info").html(request.responseText); // displays any errors from the ajax request
         });
     }
 });
 
 function sortLogData(data) {
     for (let i = 0; i < data.length; i++) {
-        data[i].date = new Date(data[i]["request_timestamp"]);
+        data[i].date = new Date(data[i]["request_timestamp"]); // create a new Date object from the timestamp
     }
 
-    var rowDateComparison = function (r1, r2) {
+    var rowDateComparison = function (r1, r2) { // comparison function for sorting the data by date of the month
         if (r1.date.getUTCDate() < r2.date.getUTCDate())
             return -1;
         else if (r1.date.getUTCDate() > r2.date.getUTCDate())
@@ -31,7 +31,7 @@ function sortLogData(data) {
             return 0;
     };
 
-    data.sort(rowDateComparison); // sort the data by the date of the month
+    data.sort(rowDateComparison); // sort the data
 }
 
 function setupAverageLoadTimeChart(data) {
@@ -46,7 +46,7 @@ function setupAverageLoadTimeChart(data) {
             datasets: [
                 {
                     label: "RDE Test Site",
-                    tension: 0,
+                    tension: 0, // sharp lines at data points
                     data: avgLoadTimeData.avgLoadTimes,
                     borderColor: 'rgba(0, 0, 255, 1)', // set the color of the line to a solid blue
                     borderWidth: 1
@@ -82,17 +82,19 @@ function getAverageLoadTimeChartData(data) {
 
     // populate the labels and avgLoadTimes arrays
     for (let i = 0; i < data.length; i++) { // loop through the rows from the query
-        let dateLabel = data[i].date.getUTCMonth() + "/" + data[i].date.getUTCDate();
-        labels.push(dateLabel); // add a label in the format "month/day"
+
+        // create and add a label in the format "month/day"
+        labels.push(data[i].date.getUTCMonth() + "/" + data[i].date.getUTCDate());
+
         let loadTimeSum = data[i]["load_time"];
         let j = i + 1;
-        while (j < data.length && data[i].date.getUTCDate() == data[j].date.getUTCDate()) {
+        while (j < data.length && data[i].date.getUTCDate() === data[j].date.getUTCDate()) { // sum the load times while the dates are equal
             loadTimeSum += data[j]["load_time"];
             j++;
         }
         let numLoadTimes = j - i;
-        avgLoadTimes.push(Math.round(loadTimeSum / numLoadTimes)); // add the average load time for the day
-        i += numLoadTimes - 1;
+        avgLoadTimes.push(Math.round(loadTimeSum / numLoadTimes)); // add the average load time for the date
+        i += numLoadTimes - 1; // for loop takes care of the -1
     }
 
     /*
@@ -148,18 +150,18 @@ function getAverageLoadTimeChartData(data) {
 }
 
 function setupLoginDistributionChart(data) {
-    var loginDistData = getLoginDistributionChartData(data);
+    var loginDistData = getLoginDistributionChartData(data); // gets the login data
 
-    var $loginDistChartCanvas = $("#canvas-hourly-chart");
+    var $loginDistChartCanvas = $("#canvas-hourly-chart"); // select the canvas for the chart
 
-    var hourlyChart = new Chart($loginDistChartCanvas, {
+    var hourlyChart = new Chart($loginDistChartCanvas, { // create the chart
         type: "line",
         data: {
             labels: loginDistData.labels,
             datasets: [
                 {
                     label: "RDE Test Site",
-                    tension: 0.2,
+                    tension: 0.2, // give the lines some tension
                     data: loginDistData.avgLoginDistribution,
                     borderColor: 'rgba(0, 0, 255, 1)', // set the color of the line to a solid blue
                     borderWidth: 1
@@ -195,7 +197,9 @@ function UTCToTwelveHourString(hourUTC) {
 function getLoginDistributionChartData(data) {
     var labels = [];
     var numLoginsByHour = [];
-    var numDaysToCompare = 0;
+
+    var numDaysToCompare = 0; // this will be used to average the log-ins
+
 
     for (let hour = 0; hour < 24; hour++) {
         // sets the labels to the 12-hour format
@@ -210,8 +214,8 @@ function getLoginDistributionChartData(data) {
         numLoginsByHour[hour]++;
 
         /*
-        the average will be calculated by greatest date of the month (e.g. 30),
-        not by the number of days counted, since some days are missing.
+         the average will be calculated by greatest date of the month (e.g. 30),
+         not by the number of days counted, since some days are missing.
          */
         if (timestamp.getUTCDate() > numDaysToCompare)
             numDaysToCompare = timestamp.getUTCDate();

@@ -33,19 +33,21 @@ var sqlCon = mysql.createConnection({
 
 app.use(serve_static(path.join(__dirname, "public")));
 app.use("/getAllLogs", function (req, res) {
-    var q = "SELECT * FROM load_times";
+    var q = "SELECT load_time, request_timestamp FROM load_times";
+
     sqlCon.query(q, function (err, rows) {
         if (err) {
             res.writeHead(500, {"Content-Type": "text/plain"});
             res.write(err.toString());
             res.end();
             return;
-
         }
         res.writeHead(200, {"Content-Type": "application/json"});
+
         res.write(JSON.stringify(rows));
+
         res.end();
-    })
+    });
 });
 
 var server = http.createServer(app);
