@@ -11,8 +11,8 @@
     "url": "https://github.com/lcampanella98/site-coach.git"
   },
   "dependencies": {
-    "connect": "latest",
-    "serve-static": "latest",
-    "mysql": "latest"
+    "connect": "3.5.0",
+    "serve-static": "1.11.1",
+    "mysql": "2.11.1"
   }
 }
