@@ -7,7 +7,7 @@ $.ajax({ // the main ajax call which requests the log data from the server
 
         $(document).ready(function () {
             setupAverageLoadTimeChart(data); // sets up the main load time chart
-            setupLoginDistributionChart(data); // sets up the login distribution charts
+            setupHourlyCharts(data); // sets up the hourly charts
         });
     },
     error: function (request, status, error) {
@@ -148,7 +148,7 @@ function getAverageLoadTimeChartData(data) {
     }
 }
 
-function setupLoginDistributionChart(data) {
+function setupHourlyCharts(data) {
     var hourlyData = getHourlyChartData(data); // gets the login data
 
     var $loginDistChartCanvas = $("#canvas-hourly-login-dist-chart"); // select the canvas for the
