@@ -16,7 +16,6 @@ var dbConfigObj;
 if (fs.existsSync(dbConfigPath)) {
     dbConfigObj = JSON.parse(fs.readFileSync(dbConfigPath));
 } else {
-    console.log("file not found");
     dbConfigObj = {
         host: "localhost",
         user: "root",
