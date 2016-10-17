@@ -1,9 +1,17 @@
+var chartBorderColor = 'rgba(0, 0, 255, 1)';
+var chartBackgroundColor = 'rgba(0, 0, 255, 0.15)';
+
+$(document).ready(function() { // style the page
+    $(".chart-header-flag").css('background-color', chartBackgroundColor);
+    $("#title-jumbotron").css('background-color', chartBackgroundColor).first().css('color', 'rgba(0, 0, 0, 0.7)');
+});
+
 $.ajax({ // the main ajax call which requests the log data from the server
     url: "/getAllLogs",
     type: "get",
     dataType: "json",
     success: function (data) {
-        sortLogData(data); // adds a date object to each row and sorts the data
+        sortLogData(data); // parses and adds a date object to each row and sorts the data by date
 
         $(document).ready(function () {
             setupAverageLoadTimeChart(data); // sets up the main load time chart
@@ -48,7 +56,8 @@ function setupAverageLoadTimeChart(data) {
                     label: "RDE Test Site",
                     tension: 0, // sharp lines at data points
                     data: avgLoadTimeData.avgLoadTimes,
-                    borderColor: 'rgba(0, 0, 255, 1)', // set the color of the line to a solid blue
+                    borderColor: chartBorderColor, // set the color of the line to a solid blue
+                    backgroundColor: chartBackgroundColor,
                     borderWidth: 1
                 }
             ]
@@ -82,8 +91,8 @@ function getAverageLoadTimeChartData(data) {
     // populate the labels and avgLoadTimes arrays
     for (let i = 0; i < data.length; i++) { // loop through the rows from the query
 
-        // create and add a label in the format "month/day"
-        labels.push(data[i].date.getUTCMonth() + "/" + data[i].date.getUTCDate());
+        // create and add a label in the format "month/day" (1 is added to the UTC month to obtain a readable month)
+        labels.push((data[i].date.getUTCMonth() + 1) + "/" + data[i].date.getUTCDate());
 
         let loadTimeSum = data[i]["load_time"];
         let j = i + 1;
@@ -162,7 +171,8 @@ function setupHourlyCharts(data) {
                     label: "RDE Test Site",
                     tension: 0,
                     data: hourlyData.avgLoginDistribution,
-                    borderColor: 'rgba(0, 0, 255, 1)', // set the color of the line to a solid blue
+                    borderColor: chartBorderColor, // set the color of the line to a solid blue
+                    backgroundColor: chartBackgroundColor,
                     borderWidth: 1
                 }
             ]
@@ -199,7 +209,8 @@ function setupHourlyCharts(data) {
                     label: "RDE Test Site",
                     tension: 0,
                     data: hourlyData.avgLoadTimesByHour,
-                    borderColor: 'rgba(0, 0, 255, 1)', // set the color of the line to a solid blue
+                    borderColor: chartBorderColor, // set the color of the line to a solid blue
+                    backgroundColor: chartBackgroundColor,
                     borderWidth: 1
                 }
             ]
@@ -240,7 +251,7 @@ function getHourlyChartData(data) {
 
     for (let hour = 0; hour < 24; hour++) {
         // sets the labels to the 12-hour format
-        labels.push(UTCToTwelveHourString(hour));
+        labels.push(UTCToTwelveHourString(hour)); // converts the UTC hour to the 12 hour and (AM/PM)
         numLoginsByHour.push(0);
         totalLoadTimesByHour.push(0);
     }
