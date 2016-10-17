@@ -1,8 +1,9 @@
 var chartBorderColor = 'rgba(0, 0, 255, 1)';
 var chartBackgroundColor = 'rgba(0, 0, 255, 0.15)';
+var chartHeaderFlagBackgroundColor = 'rgba(0, 0, 255, 0.25)';
 
 $(document).ready(function() { // style the page
-    $(".chart-header-flag").css('background-color', chartBackgroundColor);
+    $(".chart-header-flag").css('background-color', chartHeaderFlagBackgroundColor);
     $("#title-jumbotron").css('background-color', chartBackgroundColor).first().css('color', 'rgba(0, 0, 0, 0.7)');
 });
 
