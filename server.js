@@ -2,6 +2,7 @@ var fs = require("fs");
 var mysql = require("mysql");
 var path = require("path");
 var http = require("http");
+var favicon = require("serve-favicon");
 
 var connect = require("connect");
 var serve_static = require("serve-static");
@@ -30,6 +31,7 @@ var sqlCon = mysql.createConnection({
     database: "site_coach"
 });
 
+app.use(favicon(path.join(__dirname, "public/favicon-16x16.png")));
 app.use(serve_static(path.join(__dirname, "public")));
 app.use("/getAllLogs", function (req, res) {
     var q = "SELECT load_time, request_timestamp FROM load_times";
