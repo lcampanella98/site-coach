@@ -4,7 +4,7 @@ var chartHeaderFlagBackgroundColor = 'rgba(0, 0, 255, 0.25)';
 
 $(document).ready(function() { // style the page
     $(".chart-header-flag").css('background-color', chartHeaderFlagBackgroundColor);
-    $("#title-jumbotron").css('background-color', chartBackgroundColor).first().css('color', 'rgba(0, 0, 0, 0.7)');
+    $("#title-jumbotron").css('background-color', chartHeaderFlagBackgroundColor);
 });
 
 $.ajax({ // the main ajax call which requests the log data from the server
